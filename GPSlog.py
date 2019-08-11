@@ -9,7 +9,7 @@ from gps3 import gps3
 
 # mysql config
 username = "root"
-database = "2016test"
+database = "2019"
 # host = "192.168.7.2"
 host = "127.0.0.1"
 password = "dusc2015"
