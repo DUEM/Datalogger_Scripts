@@ -58,15 +58,22 @@ class BMS_ORM(Base):
 
     msg_id = sqla.Column(sqla.BigInteger, primary_key=True)
     time = sqla.Column(DATETIME(fsp=4))
-    modID = sqla.Column(sqla.Integer)
-    cycles = sqla.Column(sqla.Integer)
-    OTP = sqla.Column(sqla.Integer)
-    OVP = sqla.Column(sqla.Integer)
-    LVP = sqla.Column(sqla.Integer)
-    cellV0 = sqla.Column(sqla.Float)
-    cellV1 = sqla.Column(sqla.Float)
-    cellV2 = sqla.Column(sqla.Float)
-    cellV3 = sqla.Column(sqla.Float)
+    cellVmin = sqla.Column(sqla.Float)
+    cellVmax = sqla.Column(sqla.Float)
+    cellVavg = sqla.Column(sqla.Float)
+    packCurr = sqla.Column(sqla.Float)
+    tempmax = sqla.Column(sqla.Float)
+    tempmin = sqla.Column(sqla.Float)
+    tempavg = sqla.Column(sqla.Float)
+    SoC = sqla.Column(sqla.Float)
+    curr = sqla.Column(sqla.Float)
+    pVolt = sqla.Column(sqla.Float)
+    pSumVolt = sqla.Column(sqla.Float)
+    DCLim = sqla.Column(sqla.Float)
+    CCLim = sqla.Column(sqla.Float)
+    relayState = sqla.Column(sqla.Integer)
+    currState = sqla.Column(sqla.Integer)
+
 
 class GPS_ORM(Base):
     __tablename__ = 'gps_tpv'

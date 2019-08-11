@@ -7,10 +7,11 @@ Logs CAN messages to mysql server
 @author: Adam Leach adam.leach@dur.ac.uk, qazwsxalan@gmail.com
 """
 import controls
+import motors
+import batteries
 import datetime
 import dbstorage
 import json
-import motors
 import os
 import sqlalchemy as sqla
 import sys
@@ -36,16 +37,18 @@ bus = native_bus.SocketscanNative_Bus(channel=can_interface)
 # Set up bus objects
 motor = motors.Wavesculptor20(mc_base_address=motor_base_id)
 controls = controls.Controls(controls_base_address=driver_base_id)
-can_objects = [motor, controls]
+bms = batteries.orionBMS()
+can_objects = [motor, controls, bms]
 
 
 # Set up bus object ORM interfaces
-can_orms = [dbstorage.WS20_ORM, dbstorage.Controls_ORM]
+can_orms = [dbstorage.WS20_ORM, dbstorage.Controls_ORM, dbstorage.BMS_ORM]
 
 # Set up bus object shared memory files
 motor_file = "/dev/shm/motor"
 controls_file = "/dev/shm/controls"
-can_files = [motor_file, controls_file]
+bms_file = "/dev/shm/bms"
+can_files = [motor_file, controls_file, bms_file]
 
 # intial file setup prevents file not found errors
 
