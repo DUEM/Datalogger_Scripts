@@ -20,7 +20,7 @@ from can.interfaces import socketcan_native as native_bus
 from sqlalchemy.orm import sessionmaker
 # mysql config
 username = "root"
-database = "2016test"
+database = "2019"
 # host = "192.168.7.2"
 host = "127.0.0.1"
 password = "dusc2015"

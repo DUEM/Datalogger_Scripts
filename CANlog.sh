@@ -11,12 +11,12 @@ echo found
 sleep 1
 
 # enable slcan0
-slcand -o -c -f -s8 /dev/ttyCAN slcan0 > /root/Datalogger_Scripts/slcand_errors.txt
+slcand -o -c -f -s8 /dev/ttyCAN slcan0 > /home/pi/Datalogger_Scripts/slcand_errors.txt
 sleep 1
-ifconfig slcan0 up > /root/Datalogger_Scripts/ifconfig_errors.txt
+ifconfig slcan0 up > /home/pi/Datalogger_Scripts/ifconfig_errors.txt
 
 # activate venv
-		source /root/Datalogger_Scripts/.venv/bin/activate
+		source /home/pi/Datalogger_Scripts/.venv/bin/activate
 
 # run CANlog.py
-python3 /root/Datalogger_Scripts/CANlog.py slcan0
+python3 /home/pi/Datalogger_Scripts/CANlog.py slcan0
