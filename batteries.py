@@ -24,13 +24,13 @@ class orionBMS(object):
                              tempmin=None,
                              tempavg=None,
                              SoC=None,
-                             curr=None,
                              pVolt=None,
                              pSumVolt=None,
                              DCLim=None,
                              CCLim=None,
                              relayState=None,
                              currState=None)
+        self.can_range = [0x700, 0x701, 0x702]
 
     def status(self):
         """returns a dict of BMS status"""
@@ -46,12 +46,14 @@ class orionBMS(object):
         """
 
         if can_id == 0x700:
-            Vmax, Vmin, Vavg = struct.unpack("HHH", can_data)
+            a = struct.unpack(">HHH", can_data)
+            Vmax, Vmin, Vavg = a
             self.statdict['cellVmin'] = 0.0001 * Vmin
             self.statdict['cellVmax'] = 0.0001 * Vmax
             self.statdict['cellVavg'] = 0.0001 * Vavg
         elif can_id == 0x701:
-            tH, tL, TA, DCL, CCL, cState = struct.unpack("bbbBBB", can_data)
+            a = struct.unpack(">bbbBBB", can_data)
+            tH, tL, tA, DCL, CCL, cState = a
             self.statdict['tempmax'] = tH
             self.statdict['tempmin'] = tL
             self.statdict['tempavg'] = tA
@@ -59,11 +61,12 @@ class orionBMS(object):
             self.statdict['CCLim'] = CCL
             self.statdict['currState'] = cState
         elif can_id == 0x702:
-            SoC, pCurr, PInstV, PSumV, rState = struct.unpack("BhbBBB", can_data)
+            a = struct.unpack(">hHHBB", can_data)
+            pCurr, PInstV, PSumV, SoC, rState = a
+            self.statdict['packCurr'] = 0.1*pCurr
+            self.statdict['pVolt'] = 0.1*PInstV
+            self.statdict['pSumVolt'] = 0.01*PSumV
             self.statdict['SoC'] = 0.5*SoC
-            self.statdict['curr'] = 0.1*pCurr
-            self.statdict['pVolt'] = PInstV
-            self.statdict['pSumVolt'] = PSumV
             self.statdict['relayState'] = rState
         else:
             return False

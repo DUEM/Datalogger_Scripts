@@ -66,7 +66,6 @@ class BMS_ORM(Base):
     tempmin = sqla.Column(sqla.Float)
     tempavg = sqla.Column(sqla.Float)
     SoC = sqla.Column(sqla.Float)
-    curr = sqla.Column(sqla.Float)
     pVolt = sqla.Column(sqla.Float)
     pSumVolt = sqla.Column(sqla.Float)
     DCLim = sqla.Column(sqla.Float)

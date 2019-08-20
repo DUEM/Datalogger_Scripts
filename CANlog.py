@@ -10,22 +10,58 @@ import controls
 import motors
 import batteries
 import datetime
-import dbstorage
 import json
 import os
-import sqlalchemy as sqla
 import sys
+from time import sleep
 import time
 from can.interfaces import socketcan_native as native_bus
+
+import sqlalchemy as sqla
 from sqlalchemy.orm import sessionmaker
-# mysql config
-username = "root"
-database = "2019"
-# host = "192.168.7.2"
-host = "127.0.0.1"
-password = "dusc2015"
-serveraddr = "mysql+mysqlconnector://%s:%s@%s/%s" % (
-    username, password, host, database)
+import dbstorage
+
+
+
+from multiprocessing import Process, Queue
+
+
+queue = Queue()
+
+def mysql_log(q):
+    # mysql config
+    username = "root"
+    database = "2019"
+    # host = "192.168.7.2"
+    host = "127.0.0.1"
+    password = "dusc2015"
+    serveraddr = "mysql+mysqlconnector://%s:%s@%s/%s" % (
+        username, password, host, database)
+    # mysql setup
+    engine = sqla.create_engine(serveraddr, pool_recycle=3600)
+    dbstorage.Base.metadata.create_all(engine)
+    session_init = sessionmaker(bind=engine)
+    session = session_init()
+    # Set up bus object ORM interfaces
+    can_orms = [dbstorage.WS20_ORM, dbstorage.Controls_ORM, dbstorage.BMS_ORM]
+    while True:
+        if not queue.empty():
+            i, changed = queue.get()
+            print(changed)
+            sys.stdout.flush()
+            sys.stderr.flush()
+            active_orm = can_orms[i]
+            session.add(active_orm(**changed))
+            # Commiting every message might strain server,
+            # setting transaction flushes to occur
+            # once per second should help
+            if queue.empty():
+                session.commit()
+        else:
+            print('empty')
+            sleep(0.1)
+
+
 
 # can config
 motor_base_id = int("0x600", 16)
@@ -41,8 +77,6 @@ bms = batteries.orionBMS()
 can_objects = [motor, controls, bms]
 
 
-# Set up bus object ORM interfaces
-can_orms = [dbstorage.WS20_ORM, dbstorage.Controls_ORM, dbstorage.BMS_ORM]
 
 # Set up bus object shared memory files
 motor_file = "/dev/shm/motor"
@@ -57,20 +91,16 @@ for i, active_obj in enumerate(can_objects):
     data["time"] = datetime.datetime.now().isoformat()
     json.dump(data, open(can_files[i], "w"))
 
-# mysql setup
-engine = sqla.create_engine(serveraddr, pool_recycle=3600)
-dbstorage.Base.metadata.create_all(engine)
-session_init = sessionmaker(bind=engine)
-session = session_init()
-
 COMMIT_RATE = 60
 
+p = Process(target=mysql_log, args=(queue,))
+p.start()
 while 1:
     msg = bus.recv()
     for i, active_obj in enumerate(can_objects):
         if msg.arbitration_id in active_obj.can_range:
             # Get a copy of old data, update and count changes
-            old_data = active_obj.status()
+            old_data = active_obj.status().copy()
             active_obj.parse_can_msg(msg.arbitration_id, msg.data)
             data = active_obj.status()
             data["time"] = datetime.datetime.now().isoformat()
@@ -89,10 +119,5 @@ while 1:
             jsonfile.flush()
             os.fsync(jsonfile.fileno())
             jsonfile.close()
-            active_orm = can_orms[i]
-            session.add(active_orm(**changed))
-            # Commiting every message might strain server,
-            # setting transaction flushes to occur
-            # once per second should help
-            if time.clock() % COMMIT_RATE <1.0:
-                session.commit()
+            queue.put((i, changed))
+
