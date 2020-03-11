@@ -95,3 +95,19 @@ class GPS_ORM(Base):
     epd = sqla.Column(sqla.Float) 
     eps = sqla.Column(sqla.Float) 
     epc = sqla.Column(sqla.Float)
+
+
+class Drivetek_ORM(Base):
+    __tablename__ = 'mppts'
+
+    msg_id = sqla.Column(sqla.BigInteger, primary_key=True)
+    time = sqla.Column(DATETIME(fsp=4))
+    name = sqla.Column(sqla.String(13))
+    BVLR = sqla.Column(sqla.Boolean)
+    OVT = sqla.Column(sqla.Boolean) 
+    NOC = sqla.Column(sqla.Boolean)
+    UNDV = sqla.Column(sqla.Boolean)
+    UIN = sqla.Column(sqla.Float) 
+    IIN = sqla.Column(sqla.Float) 
+    UOUT = sqla.Column(sqla.Float) 
+    tamb = sqla.Column(sqla.Float) 
